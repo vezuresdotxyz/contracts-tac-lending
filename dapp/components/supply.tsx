@@ -38,15 +38,14 @@ export function TokenSupply() {
       // create evm proxy msg
       const abi = new ethers.AbiCoder();
       const encodedParameters = abi.encode(
-        ["address", "uint256"],
-        ['0x7C9631C5534CDc197e2FD0d30f65C244b10EFa46', supplyAmount]
-        // [await tacSdk.getEVMTokenAddress(TON_TOKEN_ADDRESS), supplyAmount]
+        ["address", "address", "uint256"],
+        ['0x7C9631C5534CDc197e2FD0d30f65C244b10EFa46', '0x0F6e98A756A40dD050dC78959f45559F98d3289d', supplyAmount]
       );
       console.log("🚀 ~ handleSupply ~ encodedParameters:", encodedParameters)
 
       const evmProxyMsg = {
-        evmTargetAddress: '0xBBaEF34D75e15C5d04A078fc2634245842EABdc7',
-        methodName: "screwtokens(address,uint256)",
+        evmTargetAddress: '0x7995aBd27dEd50542Fb7B58a3e0280a47C72a1d2',
+        methodName: "supply(address,address,uint256)",
         encodedParameters,
       };
       console.log("🚀 ~ handleSupply ~ evmProxyMsg:", evmProxyMsg)
