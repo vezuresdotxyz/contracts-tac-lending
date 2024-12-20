@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useTonConnectModal, useTonWallet } from "@tonconnect/ui-react";
+import { useTonConnectModal, useTonWallet, useTonConnectUI } from "@tonconnect/ui-react";
 
 export default function ConnectWallet({
   text,
