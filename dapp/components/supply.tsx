@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useTonWallet, useTonConnectUI } from "@tonconnect/ui-react";
 import ConnectWallet from "./connect-wallet";
 import { TacSdk, Network, SenderFactory, AssetBridgingData } from "tac-sdk";
-import sdk from "tac-sdk";
+// import sdk from "tac-sdk";
 import { ethers } from "ethers";
 
 export function TokenSupply() {
