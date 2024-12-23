@@ -24,6 +24,7 @@ contract TonProxyApp is Ownable, Initializable {
     IPool public pool;
     UpgradeableBeacon public beacon;
 
+    mapping(bytes32 => address) public smartAccounts;
     event SmartAccountCreated(address indexed accountAddress);
 
     function initialize(
@@ -35,17 +36,20 @@ contract TonProxyApp is Ownable, Initializable {
         beacon.transferOwnership(msg.sender);
     }
 
-    function supply(
-        address token,
-        address to,
-        uint256 amount
-    ) external onlyOwner {
+    function supply(address token, uint256 amount) external {
+        address to = _getOrCreateSmartAccount();
         IERC20(token).approve(address(pool), amount);
         pool.supply(token, amount, to, 0);
     }
 
     function updateBlueprint(address _newBlueprint) external onlyOwner {
         beacon.upgradeTo(_newBlueprint);
+    }
+
+    function _getOrCreateSmartAccount() external returns (address) {
+        address account = _createSmartAccount();
+        smartAccounts[keccak256(abi.encodePacked(account))] = account;
+        return account;
     }
 
     function _createSmartAccount() dexternal onlyOwner returns (address) {
