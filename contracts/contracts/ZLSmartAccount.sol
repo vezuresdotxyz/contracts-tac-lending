@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.2 <0.9.0;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 contract ZLSmartAccount is Initializable {
     address public owner;
@@ -17,11 +17,7 @@ contract ZLSmartAccount is Initializable {
         owner = _owner;
     }
 
-    function execute(
-        address target,
-        uint256 value,
-        bytes calldata data
-    ) external onlyOwner returns (bytes memory) {
+    function execute(address target, uint256 value, bytes calldata data) external onlyOwner returns (bytes memory) {
         (bool success, bytes memory result) = target.call{value: value}(data);
         require(success, "Execution failed");
         emit Executed(target, value, data);
