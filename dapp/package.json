@@ -27,8 +27,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "shadcn-ui": "^0.9.4",
-    "tac-l2-ccl": "^0.8.19",
-    "tac-sdk": "^0.3.4",
+    "tac-sdk": "^0.3.6-rc-2",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "tonweb": "^0.0.66",
@@ -44,6 +43,7 @@
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
+    "tac-l2-ccl": "^0.8.29",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"

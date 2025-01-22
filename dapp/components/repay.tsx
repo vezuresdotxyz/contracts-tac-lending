@@ -4,30 +4,30 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { useTonWallet, useTonConnectUI } from "@tonconnect/ui-react";
 import ConnectWallet from "./connect-wallet";
-import { TacLocalTestSdk } from "tac-l2-ccl";
+import { TacSdk, Network, SenderFactory, AssetBridgingData } from "tac-sdk";
 // import sdk from "tac-sdk";
-import { Signer } from "ethers";
-
+import { ethers } from "ethers";
 
 export function TokenSupply() {
   const [supplyAmount, setSupplyAmount] = React.useState<number>(0);
   const [referralCode, setReferralCode] = React.useState<number>(0);
-  
+
   const wallet = useTonWallet();
   const [tonConnectUI] = useTonConnectUI()
-  let user: Signer;
-  let testSdk: TacLocalTestSdk;
-
   const handleSupply = async () => {
 
     const TON_TOKEN_ADDRESS = "kQCmRPHBHHqg0zf05dVvMmEwNh_cj8nRaYaYf0IoI8NIDHBa";
-    const TON_PROXY_APP_ADDRESS = "";
+
     try {
       if (!wallet) return
 
       // Initialize SDK
-      testSdk = new TacLocalTestSdk();
-      const crossChainLayerAddress = testSdk.create(ethers.provider);
+      const tacSdk = new TacSdk({
+        tonClientParameters: {
+          endpoint: "https://ton-testnet.core.chainstack.com/0fa8c05c7bf921a575e20f051a312a84/api/v2/jsonRPC",
+        },
+        network: Network.Testnet,
+      });
 
       // create sender abstraction
       const sender = await SenderFactory.getSender({
@@ -61,39 +61,11 @@ export function TokenSupply() {
       const tx = await tacSdk.sendCrossChainTransaction(evmProxyMsg, sender, jettons);
       console.log(tx);
 
-      pollStatus(tx).then((status) => {
-        console.log("transation submitted");
-      });
-      
+      console.log("transation submitted");
     } catch (e) {
       console.log(e);
     }
   };
-
-  async function pollStatus(transactionLinker: TransactionLinker, maxAttempts = 20) {
-    const tracker = new OperationTracker(Network.Testnet);
-    let attempts = 0;
-  
-    const poll = async () => {
-      if (attempts >= maxAttempts) {
-        throw new Error("Max polling attempts reached");
-      }
-  
-      const status = await tracker.getSimplifiedOperationStatus(transactionLinker);
-      if (status === SimplifiedStatuses.Successful) {
-        return "Success";
-      }
-      if (status === SimplifiedStatuses.Failed) {
-        throw new Error("Transaction failed");
-      }
-  
-      attempts++;
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
-      return poll();
-    };
-  
-    return poll();
-  }
 
   return (
     <div className="w-full max-w-md mx-auto p-3 rounded-3xl bg-[#131313] z-20">
