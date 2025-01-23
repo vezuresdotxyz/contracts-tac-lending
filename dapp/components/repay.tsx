@@ -4,94 +4,66 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { useTonWallet, useTonConnectUI } from "@tonconnect/ui-react";
 import ConnectWallet from "./connect-wallet";
-import { TacLocalTestSdk, JettonInfo, TokenMintInfo } from "tac-l2-ccl";
+import { TacSdk, Network, SenderFactory, AssetBridgingData } from "tac-sdk";
 // import sdk from "tac-sdk";
 import { ethers } from "ethers";
-import { SenderFactory } from "tac-sdk";
-
 
 export function TokenSupply() {
   const [supplyAmount, setSupplyAmount] = React.useState<number>(0);
   const [referralCode, setReferralCode] = React.useState<number>(0);
-  
+
   const wallet = useTonWallet();
   const [tonConnectUI] = useTonConnectUI()
-  let testSdk: TacLocalTestSdk;
-
   const handleSupply = async () => {
 
-    const JETTON_TVM_ADDRESS = "kQCmRPHBHHqg0zf05dVvMmEwNh_cj8nRaYaYf0IoI8NIDHBa";
-    const TON_PROXY_APP_ADDRESS = "";
+    const TON_TOKEN_ADDRESS = "kQCmRPHBHHqg0zf05dVvMmEwNh_cj8nRaYaYf0IoI8NIDHBa";
+
     try {
       if (!wallet) return
 
-      const queryId = BigInt(1);
-
-      const jettonInfo: JettonInfo = {
-        tvmAddress: JETTON_TVM_ADDRESS, // jetton minter contract address
-        name: "ZeroLend",
-        symbol: "ZERO",
-        decimals: BigInt(9),
-        description: "ZeroLend Token on TON",
-        image: "https://cache.tonapi.io/imgproxy/cOMlJuViiVXDCkAghnyNj7plX8pAZ9pv3WhklvebpTY/rs:fill:200:200:1/g:no/aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3RvbmtlZXBlci9vcGVudG9uYXBpL21hc3Rlci9wa2cvcmVmZXJlbmNlcy9tZWRpYS90b2tlbl9wbGFjZWhvbGRlci5wbmc.webp",
-      };
-
-      const tokenMintInfo: TokenMintInfo = {
-        info: jettonInfo,
-        mintAmount: BigInt(supplyAmount) * BigInt(10 ** 9),
-      };
-
       // Initialize SDK
-      testSdk = new TacLocalTestSdk();
-      const provider = new ethers.JsonRpcProvider("https://ton-testnet.core.chainstack.com/820a1a4a79e25c497e622fbb4c6e7da1/api/v2");
+      const tacSdk = new TacSdk({
+        tonClientParameters: {
+          endpoint: "https://ton-testnet.core.chainstack.com/0fa8c05c7bf921a575e20f051a312a84/api/v2/jsonRPC",
+        },
+        network: Network.Testnet,
+      });
 
-      const crossChainLayerAddress = testSdk.create(provider);
-      const operationId = "supplyOperationID";
       // create sender abstraction
       const sender = await SenderFactory.getSender({
         tonConnect: tonConnectUI,
       });
-      // define untrusted extra data by executor (it's not implemented yet on tac infrasctaucture - just empty bytes)
-      const extraData = "0x";
+      console.log("🚀 ~ handleSupply ~ sender:", sender)
 
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
-
-      // console.log("🚀 ~ handleSupply ~ sender:", sender)
-
-      const tokenEVMAddress = testSdk.getEVMJettonAddress(JETTON_TVM_ADDRESS);
-      const tvmCallerAddress = sender.getSenderAddress()
       // create evm proxy msg
       const abi = new ethers.AbiCoder();
       const encodedParameters = abi.encode(
-        ["tuple(address,uint256,uint16)"],
-        [tokenEVMAddress, supplyAmount, referralCode]
+        ["address", "address", "uint256"],
+        ['0x7C9631C5534CDc197e2FD0d30f65C244b10EFa46', '0x0F6e98A756A40dD050dC78959f45559F98d3289d', supplyAmount]
       );
+      console.log("🚀 ~ handleSupply ~ encodedParameters:", encodedParameters)
 
-      const methodName = "supplyZerolend(bytes,bytes)";
-      const target = TON_PROXY_APP_ADDRESS;
-
-      const { receipt, deployedTokens, outMessages } = await testSdk.sendMessage(
-        queryId,
-        target,
-        methodName,
+      const evmProxyMsg = {
+        evmTargetAddress: '0x7995aBd27dEd50542Fb7B58a3e0280a47C72a1d2',
+        methodName: "supply(address,address,uint256)",
         encodedParameters,
-        tvmCallerAddress,
-        [tokenMintInfo],
-        [],
-        BigInt(0),
-        extraData,
-        operationId,
-        timestamp
-      );
-      
-      // console.log("🚀 ~ handleSupply ~ receipt:", receipt)
-      
-      // console.log("🚀 ~ handleSupply ~ deployedTokens:", deployedTokens)
-      
-      // console.log("🚀 ~ handleSupply ~ outMessages:", outMessages)
-      
+      };
+      console.log("🚀 ~ handleSupply ~ evmProxyMsg:", evmProxyMsg)
+
+      // create JettonTransferData
+      const jettons: AssetBridgingData[] = [];
+      jettons.push({
+        address: TON_TOKEN_ADDRESS,
+        amount: supplyAmount,
+      });
+      console.log("🚀 ~ handleSupply ~ jettons:", jettons)
+
+      const tx = await tacSdk.sendCrossChainTransaction(evmProxyMsg, sender, jettons);
+      console.log(tx);
+
+      console.log("transation submitted");
     } catch (e) {
-      // console.log(e);
+      console.log(e);
     }
   };
 
