@@ -14,7 +14,7 @@
     "@openzeppelin/contracts-upgradeable": "^5.2.0",
     "@typechain/ethers-v5": "^11.1.2",
     "dotenv": "^16.4.7",
-    "hardhat": "2.22.18",
+    "fs": "^0.0.1-security",
     "tac-l2-ccl": "^0.8.29"
   },
   "devDependencies": {
@@ -32,7 +32,10 @@
     "@types/node": ">=18.0.0",
     "@zerolendxyz/core-v3": "^2.21.0",
     "chai": "^4.2.0",
-    "ethers": "^5.7.2",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.18",
+    "hardhat-dependency-compiler": "^1.2.1",
+    "hardhat-deploy": "^0.14.0",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
