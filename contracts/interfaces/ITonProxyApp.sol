@@ -5,7 +5,6 @@ interface ITonProxyApp {
     struct SupplyParams {
         address asset;
         uint256 amount;
-        address onBehalfOf;
         uint16 referralCode;
     }
 }
