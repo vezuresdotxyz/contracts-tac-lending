@@ -2,6 +2,7 @@
 pragma solidity >=0.8.2 <0.9.0;
 
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ZLSmartAccount is Initializable {
     address public owner;
@@ -22,6 +23,10 @@ contract ZLSmartAccount is Initializable {
         require(success, "Execution failed");
         emit Executed(target, value, data);
         return result;
+    }
+
+    function approve (address token, address spender, uint256 amount) external onlyOwner {
+        IERC20(token).approve(spender, amount);
     }
 
     receive() external payable {}
