@@ -1,5 +1,7 @@
 import { TokenSupply } from "@/components/supply";
 import Header from "@/components/layout/header";
+import { TokenBorrow } from "../borrow";
+import { TokenWithdraw } from "../withdraw";
 
 export default function Home() {
   return (
@@ -10,6 +12,8 @@ export default function Home() {
           CONNECT WITH ZEROLEND
         </h1>
         <TokenSupply />
+        <TokenBorrow />
+        <TokenWithdraw />
         <p className="text-gray-400 text-center text-md w-1/4">
           This is just a demostration for supply.
         </p>
