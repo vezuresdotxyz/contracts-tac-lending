@@ -12,7 +12,9 @@
   "dependencies": {
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/contracts-upgradeable": "^5.2.0",
+    "@tonappchain/evm-ccl": "^0.9.23",
     "@typechain/ethers-v5": "^11.1.2",
+    "@uniswap/lib": "^4.0.1-alpha",
     "dotenv": "^16.4.7",
     "fs": "^0.0.1-security",
     "tac-l2-ccl": "^0.8.29"
