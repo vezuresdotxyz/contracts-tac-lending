@@ -38,6 +38,12 @@ export default {
       accounts: [process.env.PRIVATE_KEY || ""],
       saveDeployments: true,
     },
+    tac_mainnet: {
+      url: `https://rpc.ankr.com/tac`,
+      chainId: 239,
+      accounts: [process.env.PRIVATE_KEY || ""],
+      saveDeployments: true,
+    }
   },
   namedAccounts: {
     deployer: {
@@ -52,6 +58,14 @@ export default {
       urls: {
           apiURL: "",
           browserURL: "https://explorer.tac-turin.ankr.com/",
+        },
+      },
+      {
+        network: "tac_mainnet",
+        chainId: 239,
+        urls: {
+          apiURL: "https://explorer.tac.build/api",
+          browserURL: "https://explorer.tac.build",
         },
       },
     ],
