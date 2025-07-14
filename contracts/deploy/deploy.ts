@@ -1,7 +1,8 @@
 import { DeployFunction } from "hardhat-deploy/dist/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { InitializableAdminUpgradeabilityProxy, TonProxyApp } from "../typechain";
+import { InitializableAdminUpgradeabilityProxy, ZerolendPoolProxy } from "../typechain";
 import { save } from "../scripts/utils";
+
 const func: DeployFunction = async function ({
     getNamedAccounts,
     deployments,
@@ -13,8 +14,8 @@ const func: DeployFunction = async function ({
   console.log("Deployer Address:", deployer);
 
   // Deployment parameters
-  const crossChainLayerAddress = "0xf101319630F67cEaa4612930FbDd2Ee26F6E8288";
-  const zerolendPoolAddress = "0x4dFa558A5bDDA4A4396B41c1EC1B02e330137CAf";
+  const crossChainLayerAddress = "0x9fee01e948353E0897968A3ea955815aaA49f58d";
+  const zerolendPoolAddress = "0xc9205A79bca35D66c077cC625b41e4FaF2e2b04f";
 
   // Deploy the ZLSmartAccount blueprint
   console.log("Deploying ZLSmartAccount blueprint...");
@@ -32,78 +33,103 @@ const func: DeployFunction = async function ({
     bluePrint.address,
   );
 
-  // Deploy the TonProxyApp implementation
-  console.log("Deploying TonProxyApp implementation...");
-  const tonProxyAppArtifact = await deploy("TonProxyAppImpl", {
+  // Deploy the ZLSmartAccountFactory
+  console.log("Deploying ZLSmartAccountFactory...");
+  const smartAccountFactory = await deploy("ZLSmartAccountFactory", {
     from: deployer,
-    contract: "TonProxyApp",
-    args: [crossChainLayerAddress],
+    contract: "ZLSmartAccountFactory",
     log: true,
   });
-  console.log("TonProxyApp Impl artifact deployed")
+  console.log("ZLSmartAccountFactory deployed at:", smartAccountFactory.address);
 
   save(
     hre.network.name,
-    "TonProxyAppImpl",
-    "TonProxyApp",
-    tonProxyAppArtifact.address
-  )
+    "ZLSmartAccountFactory",
+    "ZLSmartAccountFactory",
+    smartAccountFactory.address
+  );
+
+  // Initialize the ZLSmartAccountFactory with the blueprint
+  console.log("Initializing ZLSmartAccountFactory...");
+  const factoryContract = await hre.ethers.getContractAt("ZLSmartAccountFactory", smartAccountFactory.address);
+  // const initTx = await factoryContract.initialize(bluePrint.address);
+  console.log("ZLSmartAccountFactory initialized with tx:");
+
+  // Deploy the ZerolendPoolProxy implementation
+  console.log("Deploying ZerolendPoolProxy implementation...");
+  const zerolendPoolProxyImpl = await deploy("ZerolendPoolProxyImpl", {
+    from: deployer,
+    contract: "ZerolendPoolProxy",
+    log: true,
+  });
+  console.log("ZerolendPoolProxy Impl deployed at:", zerolendPoolProxyImpl.address);
+
+  save(
+    hre.network.name,
+    "ZerolendPoolProxyImpl",
+    "ZerolendPoolProxy",
+    zerolendPoolProxyImpl.address
+  );
 
   // Deploy the proxy contract
   console.log("Deploying Proxy...");
-
-  const proxyArtifact = await deploy("TonProxyApp-Proxy", {
+  const proxyArtifact = await deploy("ZerolendPoolProxy-Proxy", {
     from: deployer,
     contract: "InitializableAdminUpgradeabilityProxy",
     log: true,
   });
-  console.log("Proxy artifact deployed) ");
+  console.log("Proxy deployed at:", proxyArtifact.address);
 
   save(
     hre.network.name,
-    "TonProxyApp-Proxy",
+    "ZerolendPoolProxy-Proxy",
     "InitializableAdminUpgradeabilityProxy",
     proxyArtifact.address
-  )
+  );
 
-  // Initialize the proxy with the TonProxyApp implementation and initializer data
-  const tonProxyAppImpl = (await hre.ethers.getContractAt(
-      tonProxyAppArtifact.abi,
-      tonProxyAppArtifact.address
-  )) as any as TonProxyApp;
+  // Get contract instances
+  const zerolendPoolProxyContract = (await hre.ethers.getContractAt(
+    zerolendPoolProxyImpl.abi,
+    zerolendPoolProxyImpl.address
+  )) as any as ZerolendPoolProxy;
 
   const proxy = (await hre.ethers.getContractAt(
     proxyArtifact.abi,
     proxyArtifact.address
   )) as any as InitializableAdminUpgradeabilityProxy;
 
-  const tx = await tonProxyAppImpl.initialize(
-    bluePrint.address,
-    zerolendPoolAddress,
-   { gasLimit: 1000000 }
-  );
-
-  await tx.wait();
-  console.log("ProxyImpl initialized with TonProxyApp and ZLSmartAccount blueprint, at tx: ", tx.hash);
-
-  const initializePayload = tonProxyAppImpl.interface.encodeFunctionData(
+  // Encode the initialization data for the proxy
+  const initializePayload = zerolendPoolProxyContract.interface.encodeFunctionData(
     "initialize",
     [
-        bluePrint.address,
-        zerolendPoolAddress,
+      deployer, // deployer
+      zerolendPoolAddress, // appAddress
+      smartAccountFactory.address, // ZLSmartAccountFactoryAddress
+      crossChainLayerAddress // _crossChainLayer
     ]
-);
+  );
+
+  // Initialize the proxy
+  console.log("Initializing proxy with ZerolendPoolProxy implementation...");
   const proxyInitTx = await proxy["initialize(address,address,bytes)"](
-    tonProxyAppArtifact.address,
+    zerolendPoolProxyImpl.address,
     deployer,
     initializePayload
   );
-  await proxyInitTx.wait();
-    console.log("Proxy initialized with TonProxyApp and ZLSmartAccount blueprint, at tx: ", proxyInitTx.hash);
+  console.log("Proxy initialized with tx:", proxyInitTx);
+
+  // Verify the deployment
+  console.log("\nDeployment Summary:");
+  console.log("SmartAccountBluePrint:", bluePrint.address);
+  console.log("ZLSmartAccountFactory:", smartAccountFactory.address);
+  console.log("ZerolendPoolProxy Implementation:", zerolendPoolProxyImpl.address);
+  console.log("Proxy:", proxyArtifact.address);
+  console.log("Cross Chain Layer:", crossChainLayerAddress);
+  console.log("Zerolend Pool:", zerolendPoolAddress);
 };
 
-func.tags = ["TonProxyApp"];
+func.tags = ["ZerolendPoolProxy"];
 func.dependencies = [];
-func.id = "TonProxyApp";
+func.id = "ZerolendPoolProxy";
 
 export default func;

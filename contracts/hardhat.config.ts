@@ -51,6 +51,10 @@ export default {
     },
   },
   etherscan: {
+    apiKey: {
+      tac_turin: process.env.TAC_TURIN_API_KEY || "test",
+      tac_mainnet: process.env.TAC_MAINNET_API_KEY || "test",
+    },
     customChains: [
       {
         network: "tac_turin",
