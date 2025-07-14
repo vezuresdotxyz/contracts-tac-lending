@@ -1,0 +1,26 @@
+{
+  "SmartAccountBluePrint": {
+    "contract": "ZLSmartAccount",
+    "verified": false,
+    "address": "0xfF925f86Ba945d61556cc4a867eE86F954F98485",
+    "args": []
+  },
+  "ZLSmartAccountFactory": {
+    "contract": "ZLSmartAccountFactory",
+    "verified": false,
+    "address": "0xF53243a2a24F09826771B71b02cB07Ada9F96383",
+    "args": []
+  },
+  "ZerolendPoolProxyImpl": {
+    "contract": "ZerolendPoolProxy",
+    "verified": false,
+    "address": "0x2A2243b41c3F7830D83D7ec81e985629329ad400",
+    "args": []
+  },
+  "ZerolendPoolProxy-Proxy": {
+    "contract": "InitializableAdminUpgradeabilityProxy",
+    "verified": false,
+    "address": "0xCb45D92574212c3337452914F8d2707AFC2cE3bf",
+    "args": []
+  }
+}
